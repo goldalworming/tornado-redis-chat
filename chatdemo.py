@@ -88,20 +88,13 @@ class MessageUpdatesHandler(BaseHandler):
         self.client.subscribe('chat_channel')
         self.client.listen(self.on_message)
 
-    def on_new_messages(self, messages):
+    @tornado.web.asynchronous
+    def on_message(self, result):
         # Closed client connection
         if self.request.connection.stream.closed():
             return
-        self.finish(dict(messages=messages))
-
-    def on_message(self, messages):
-        # Closed client connection
-        if self.request.connection.stream.closed():
-            return
-        msg = json.loads(messages.body,'ascii')
+        msg = json.loads(result.body)
         self.finish(dict(messages=[msg]))
-
-    def on_connection_close(self):
         self.client.unsubscribe('chat_channel')
         self.client.disconnect()
 
